@@ -64,9 +64,17 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView {
     }
 
     @Override
-    public void setFailureCatalogResponse(String message) {
+    public void setFailureCatalogUpdate(int code) {
         swipeContainer.setRefreshing(false);
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.error_occurred_while_update_catalog) +
+                "\n" + getString(R.string.code) + code, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void setFailureCatalogUpdate(String message) {
+        swipeContainer.setRefreshing(false);
+        Toast.makeText(this, getString(R.string.error_occurred_while_update_catalog) +
+                "\n" + message, Toast.LENGTH_SHORT).show();
     }
 
     private void initGridDisplay() {

@@ -1,5 +1,7 @@
 package com.invizorys.evotest.presentation.presenter;
 
+import android.text.TextUtils;
+
 import com.invizorys.evotest.Constants;
 import com.invizorys.evotest.data.remote.PromService;
 import com.invizorys.evotest.data.remote.RestClient;
@@ -31,14 +33,27 @@ public class CatalogPresenter extends BasePresenter<CatalogView> {
         call.enqueue(new Callback<CatalogResponse>() {
             @Override
             public void onResponse(Call<CatalogResponse> call, Response<CatalogResponse> response) {
-                if (response.isSuccessful() && isViewAttached()) {
-                    getView().setCatalogItems(response.body().getCatalog().getResults());
+                if (isViewAttached()) {
+                    if (response.isSuccessful()) {
+                        getView().setCatalogItems(response.body().getCatalog().getResults());
+                    } else {
+                        getView().setFailureCatalogUpdate(response.code());
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<CatalogResponse> call, Throwable t) {
-
+                if (!isViewAttached()) {
+                    return;
+                }
+                String failureText;
+                if (!TextUtils.isEmpty(t.getMessage())) {
+                    failureText = t.getMessage();
+                } else {
+                    failureText = t.toString();
+                }
+                getView().setFailureCatalogUpdate(failureText);
             }
         });
     }

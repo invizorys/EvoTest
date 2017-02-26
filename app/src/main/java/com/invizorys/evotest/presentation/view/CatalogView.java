@@ -9,4 +9,5 @@ import java.util.List;
  */
 public interface CatalogView extends BaseView {
     void setCatalogItems(List<Product> catalogItems);
+    void setFailureCatalogResponse(String message);
 }

@@ -8,9 +8,9 @@ import java.util.List;
  */
 
 public class Catalog {
-    private ArrayList<CatalogItem> results;
+    private ArrayList<Product> results;
 
-    public List<CatalogItem> getResults() {
+    public List<Product> getResults() {
         return results;
     }
 }

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">EvoTest</string>
+    <string name="buy">Купить</string>
+    <string name="in_stock">В наличии</string>
 </resources>

@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
  * Created by Roma on 25.02.2017.
  */
 
-public class CatalogItem {
+public class Product {
     private int id;
     @SerializedName("price_currency")
     private String priceCurrency;
@@ -39,5 +39,9 @@ public class CatalogItem {
 
     public double getPrice() {
         return price;
+    }
+
+    public String getPriceAndCurrency() {
+        return price + " " + priceCurrency;
     }
 }

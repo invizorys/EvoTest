@@ -17,6 +17,7 @@ import com.invizorys.evotest.model.Product;
 import com.invizorys.evotest.presentation.presenter.CatalogPresenter;
 import com.invizorys.evotest.presentation.view.CatalogView;
 import com.invizorys.evotest.ui.adapter.ProductAdapter;
+import com.invizorys.evotest.util.EndlessRecyclerOnScrollListener;
 import com.invizorys.evotest.util.SharedPrefHelper;
 
 import java.util.List;
@@ -43,7 +44,7 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView {
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                presenter.getCatalog();
+                presenter.getCatalog(0);
             }
         });
     }
@@ -85,7 +86,7 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView {
         super.onStart();
         presenter.attachView(this);
         swipeContainer.setRefreshing(true);
-        presenter.getCatalog();
+        presenter.getCatalog(0);
     }
 
     @Override
@@ -114,6 +115,12 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView {
     }
 
     @Override
+    public void addCatalogItems(List<Product> catalogItems) {
+        swipeContainer.setRefreshing(false);
+        productAdapter.addProducts(catalogItems);
+    }
+
+    @Override
     public void setFailureCatalogUpdate(int code) {
         swipeContainer.setRefreshing(false);
         Toast.makeText(this, getString(R.string.error_occurred_while_update_catalog) +
@@ -130,10 +137,24 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView {
     private void initGridDisplay() {
         GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
         rvProducts.setLayoutManager(layoutManager);
+        rvProducts.addOnScrollListener(new EndlessRecyclerOnScrollListener(layoutManager) {
+            @Override
+            public void onLoadMore(int totalItemCount) {
+                swipeContainer.setRefreshing(true);
+                presenter.getCatalog(totalItemCount);
+            }
+        });
     }
 
     private void initListDisplay() {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         rvProducts.setLayoutManager(layoutManager);
+        rvProducts.addOnScrollListener(new EndlessRecyclerOnScrollListener(layoutManager) {
+            @Override
+            public void onLoadMore(int totalItemCount) {
+                swipeContainer.setRefreshing(true);
+                presenter.getCatalog(totalItemCount);
+            }
+        });
     }
 }

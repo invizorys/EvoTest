@@ -25,7 +25,7 @@ public class CatalogPresenter extends BasePresenter<CatalogView> {
         promService = new RestClient().getPromService();
     }
 
-    public void getCatalog() {
+    public void getCatalog(final int offset) {
         MediaType mediaType = MediaType.parse(Constants.TEXT_PLAIN);
         RequestBody body = RequestBody.create(mediaType, PromService.catalogBody);
 
@@ -35,7 +35,11 @@ public class CatalogPresenter extends BasePresenter<CatalogView> {
             public void onResponse(Call<CatalogResponse> call, Response<CatalogResponse> response) {
                 if (isViewAttached()) {
                     if (response.isSuccessful()) {
-                        getView().setCatalogItems(response.body().getCatalog().getResults());
+                        if (offset == 0) {
+                            getView().setCatalogItems(response.body().getCatalog().getResults());
+                        } else {
+                            getView().addCatalogItems(response.body().getCatalog().getResults());
+                        }
                     } else {
                         getView().setFailureCatalogUpdate(response.code());
                     }

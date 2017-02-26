@@ -61,4 +61,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.MyViewHo
     public int getItemCount() {
         return products.size();
     }
+
+    public void addProducts(List<Product> products) {
+        this.products.addAll(products);
+        notifyDataSetChanged();
+    }
 }

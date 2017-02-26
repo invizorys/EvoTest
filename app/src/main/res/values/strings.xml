@@ -4,4 +4,6 @@
     <string name="in_stock">В наличии</string>
     <string name="error_occurred_while_update_catalog">Ошибка при обновлении каталога.</string>
     <string name="code">Код: </string>
+    <string name="grid">Сетка</string>
+    <string name="list">Список</string>
 </resources>

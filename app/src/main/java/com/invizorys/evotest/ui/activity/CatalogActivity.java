@@ -19,7 +19,10 @@ import com.invizorys.evotest.presentation.view.CatalogView;
 import com.invizorys.evotest.ui.adapter.ProductAdapter;
 import com.invizorys.evotest.util.EndlessRecyclerOnScrollListener;
 import com.invizorys.evotest.util.SharedPrefHelper;
+import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class CatalogActivity extends AppCompatActivity implements CatalogView {
@@ -27,7 +30,9 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView {
     private SwipeRefreshLayout swipeContainer;
     private ProductAdapter productAdapter;
     private MenuItem menuItemGrid;
+    private MaterialSearchView searchView;
     private CatalogPresenter presenter = new CatalogPresenter();
+    private String[] productNamesArr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +52,21 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView {
                 presenter.getCatalog(0);
             }
         });
+
+        searchView = (MaterialSearchView) findViewById(R.id.search_view);
+        searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Toast.makeText(CatalogActivity.this, R.string.will_be_implemented_in_the_next_version,
+                        Toast.LENGTH_SHORT).show();
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
     }
 
     @Override
@@ -58,6 +78,9 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView {
         if (!SharedPrefHelper.isGridOn(this)) {
             setMenuItemGrid();
         }
+
+        MenuItem item = menu.findItem(R.id.action_search);
+        searchView.setMenuItem(item);
 
         return true;
     }
@@ -112,12 +135,33 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView {
         productAdapter = new ProductAdapter(catalogItems);
         rvProducts.setItemAnimator(new DefaultItemAnimator());
         rvProducts.setAdapter(productAdapter);
+        addProductName4LocalSearch(catalogItems, true);
     }
 
     @Override
     public void addCatalogItems(List<Product> catalogItems) {
         swipeContainer.setRefreshing(false);
         productAdapter.addProducts(catalogItems);
+        addProductName4LocalSearch(catalogItems, false);
+    }
+
+    private void addProductName4LocalSearch(List<Product> products, boolean isNewList) {
+        if (isNewList) {
+            productNamesArr = new String[products.size()];
+            for (int i = 0; i < products.size(); i++) {
+                productNamesArr[i] = products.get(i).getName();
+            }
+        } else {
+            String[] tempArr = new String[products.size()];
+            for (int i = 0; i < products.size(); i++) {
+                tempArr[i] = products.get(i).getName();
+            }
+            List<String> both = new ArrayList<>(productNamesArr.length + tempArr.length);
+            Collections.addAll(both, productNamesArr);
+            Collections.addAll(both, tempArr);
+            productNamesArr = both.toArray(new String[both.size()]);
+        }
+        searchView.setSuggestions(productNamesArr);
     }
 
     @Override

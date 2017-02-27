@@ -5,6 +5,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -21,22 +23,28 @@ import java.util.List;
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.MyViewHolder> {
     private Context context;
     private List<Product> products;
+    private ProductListener listener;
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
-        public ImageView ivThumbnail;
-        public TextView tvTitle, tvStatus, tvPrice;
+    class MyViewHolder extends RecyclerView.ViewHolder {
+        ImageView ivThumbnail;
+        TextView tvTitle, tvStatus, tvPrice;
+        ImageButton ibtnFavorite;
+        Button btnBuy;
 
-        public MyViewHolder(View view) {
+        MyViewHolder(View view) {
             super(view);
             ivThumbnail = (ImageView) view.findViewById(R.id.iv_thumbnail);
             tvTitle = (TextView) view.findViewById(R.id.tv_title);
             tvStatus = (TextView) view.findViewById(R.id.tv_status);
             tvPrice = (TextView) view.findViewById(R.id.tv_price);
+            btnBuy = (Button) view.findViewById(R.id.btn_buy);
+            ibtnFavorite = (ImageButton) view.findViewById(R.id.ibtn_favorite);
         }
     }
 
-    public ProductAdapter(List<Product> products) {
+    public ProductAdapter(List<Product> products, ProductListener listener) {
         this.products = products;
+        this.listener = listener;
     }
 
     @Override
@@ -49,12 +57,34 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.MyViewHo
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position) {
-        Product product = products.get(position);
+        final Product product = products.get(position);
         holder.tvTitle.setText(product.getName());
         holder.tvStatus.setText(R.string.in_stock);
         holder.tvPrice.setText(product.getPriceAndCurrency());
 
         Picasso.with(context).load(product.getImageUrl()).into(holder.ivThumbnail);
+
+        holder.btnBuy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
+        if (product.isFavorite()) {
+            holder.ibtnFavorite.setImageResource(R.drawable.ic_favorite);
+        } else {
+            holder.ibtnFavorite.setImageResource(R.drawable.ic_favorite_border);
+        }
+        holder.ibtnFavorite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                product.setFavorite(!product.isFavorite());
+                holder.ibtnFavorite.setImageResource(product.isFavorite() ?
+                        R.drawable.ic_favorite : R.drawable.ic_favorite_border);
+                listener.onFavoriteClicked(product);
+            }
+        });
     }
 
     @Override
@@ -65,5 +95,10 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.MyViewHo
     public void addProducts(List<Product> products) {
         this.products.addAll(products);
         notifyDataSetChanged();
+    }
+
+    public interface ProductListener {
+        void onFavoriteClicked(Product product);
+        void onBuyClicked(Product product);
     }
 }

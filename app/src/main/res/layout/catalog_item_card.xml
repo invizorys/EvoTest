@@ -88,6 +88,7 @@
                             android:textColor="@color/main_blue" />
 
                         <ImageButton
+                            android:id="@+id/ibtn_favorite"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentRight="true"

@@ -3,7 +3,6 @@ package com.invizorys.evotest.ui.activity;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -25,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class CatalogActivity extends AppCompatActivity implements CatalogView {
+public class CatalogActivity extends AppCompatActivity implements CatalogView, ProductAdapter.ProductListener {
     private RecyclerView rvProducts;
     private SwipeRefreshLayout swipeContainer;
     private ProductAdapter productAdapter;
@@ -131,18 +130,18 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView {
     @Override
     public void setCatalogItems(List<Product> catalogItems) {
         swipeContainer.setRefreshing(false);
-
-        productAdapter = new ProductAdapter(catalogItems);
-        rvProducts.setItemAnimator(new DefaultItemAnimator());
+        List<Product> catalogItemsWithFavorites = presenter.setFavoriteFlag(catalogItems);
+        productAdapter = new ProductAdapter(catalogItemsWithFavorites, this);
         rvProducts.setAdapter(productAdapter);
-        addProductName4LocalSearch(catalogItems, true);
+        addProductName4LocalSearch(catalogItemsWithFavorites, true);
     }
 
     @Override
     public void addCatalogItems(List<Product> catalogItems) {
         swipeContainer.setRefreshing(false);
-        productAdapter.addProducts(catalogItems);
-        addProductName4LocalSearch(catalogItems, false);
+        List<Product> catalogItemsWithFavorites = presenter.setFavoriteFlag(catalogItems);
+        productAdapter.addProducts(catalogItemsWithFavorites);
+        addProductName4LocalSearch(catalogItemsWithFavorites, false);
     }
 
     private void addProductName4LocalSearch(List<Product> products, boolean isNewList) {
@@ -200,5 +199,15 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView {
                 presenter.getCatalog(totalItemCount);
             }
         });
+    }
+
+    @Override
+    public void onFavoriteClicked(Product product) {
+        presenter.saveFavorite(product);
+    }
+
+    @Override
+    public void onBuyClicked(Product product) {
+
     }
 }

@@ -3,10 +3,14 @@ package com.invizorys.evotest.presentation.presenter;
 import android.text.TextUtils;
 
 import com.invizorys.evotest.Constants;
+import com.invizorys.evotest.data.local.ProductDataSource;
 import com.invizorys.evotest.data.remote.PromService;
 import com.invizorys.evotest.data.remote.RestClient;
 import com.invizorys.evotest.model.CatalogResponse;
+import com.invizorys.evotest.model.Product;
 import com.invizorys.evotest.presentation.view.CatalogView;
+
+import java.util.List;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -20,9 +24,22 @@ import retrofit2.Response;
 
 public class CatalogPresenter extends BasePresenter<CatalogView> {
     private PromService promService;
+    private ProductDataSource productDS;
 
     public CatalogPresenter() {
         promService = new RestClient().getPromService();
+    }
+
+    @Override
+    public void attachView(CatalogView view) {
+        super.attachView(view);
+        productDS = new ProductDataSource();
+    }
+
+    @Override
+    public void detachView() {
+        productDS.close();
+        super.detachView();
     }
 
     public void getCatalog(final int offset) {
@@ -62,4 +79,25 @@ public class CatalogPresenter extends BasePresenter<CatalogView> {
         });
     }
 
+    public void saveFavorite(Product product) {
+        ProductDataSource dataSource = new ProductDataSource();
+        if (product.isFavorite()) {
+            dataSource.saveFavorite(product);
+        } else {
+            dataSource.deleteFavorite(product);
+        }
+    }
+
+    public List<Product> setFavoriteFlag(List<Product> catalogItems) {
+        ProductDataSource productDS = new ProductDataSource();
+        if (productDS.isExistFavorites()) {
+            for (int i = 0; i < catalogItems.size(); i++) {
+                Product product = catalogItems.get(i);
+                if (productDS.isFavorite(product)) {
+                    product.setFavorite(true);
+                }
+            }
+        }
+        return catalogItems;
+    }
 }

@@ -1,5 +1,6 @@
 package com.invizorys.evotest.presentation.presenter;
 
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.invizorys.evotest.Constants;
@@ -9,6 +10,7 @@ import com.invizorys.evotest.data.remote.RestClient;
 import com.invizorys.evotest.model.CatalogResponse;
 import com.invizorys.evotest.model.Product;
 import com.invizorys.evotest.presentation.view.CatalogView;
+import com.invizorys.evotest.util.SharedPrefHelper;
 
 import java.util.List;
 
@@ -45,12 +47,12 @@ public class CatalogPresenter extends BasePresenter<CatalogView> {
         super.detachView();
     }
 
-    public void getCatalog(final int offset) {
+    public void getCatalog(Context context, final int offset) {
         MediaType mediaType = MediaType.parse(Constants.TEXT_PLAIN);
         RequestBody body = RequestBody.create(mediaType, PromService.catalogBody);
 
-        Call<CatalogResponse> call = promService.getCatalog(body, limit, offset, categoryId,
-                Constants.SORT_PRICE);
+        String sortType = SharedPrefHelper.getSortType(context);
+        Call<CatalogResponse> call = promService.getCatalog(body, limit, offset, categoryId, sortType);
         call.enqueue(new Callback<CatalogResponse>() {
             @Override
             public void onResponse(Call<CatalogResponse> call, Response<CatalogResponse> response) {

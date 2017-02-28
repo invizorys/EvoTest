@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.invizorys.evotest.Constants;
 import com.invizorys.evotest.R;
 import com.invizorys.evotest.model.Product;
 import com.invizorys.evotest.presentation.presenter.CatalogPresenter;
@@ -60,7 +61,7 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView, P
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                presenter.getCatalog(0);
+                presenter.getCatalog(CatalogActivity.this, 0);
             }
         });
 
@@ -104,7 +105,7 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView, P
         super.onStart();
         presenter.attachView(this);
         swipeContainer.setRefreshing(true);
-        presenter.getCatalog(0);
+        presenter.getCatalog(this, 0);
     }
 
     @Override
@@ -123,6 +124,19 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView, P
                 return true;
             case R.id.action_add_2_cart:
                 startActivity(new Intent(this, CartActivity.class));
+                return true;
+            case R.id.action_sort:
+                String currentSortType = SharedPrefHelper.getSortType(this);
+                if (currentSortType.equals(Constants.SORT_ASCENDING_PRICE)) {
+                    item.setIcon(R.drawable.ic_sort_ascending);
+                    item.setTitle(R.string.sort_ascending);
+                    SharedPrefHelper.saveSortType(this, Constants.SORT_DESCENDING_PRICE);
+                } else {
+                    item.setIcon(R.drawable.ic_sort_descending);
+                    item.setTitle(R.string.sort_descending);
+                    SharedPrefHelper.saveSortType(this, Constants.SORT_ASCENDING_PRICE);
+                }
+                presenter.getCatalog(this, 0);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -222,7 +236,7 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView, P
             @Override
             public void onLoadMore(int totalItemCount) {
                 swipeContainer.setRefreshing(true);
-                presenter.getCatalog(totalItemCount);
+                presenter.getCatalog(CatalogActivity.this, totalItemCount);
             }
         };
     }

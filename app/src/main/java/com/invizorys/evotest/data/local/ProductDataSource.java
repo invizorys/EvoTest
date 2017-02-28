@@ -12,13 +12,16 @@ import io.realm.RealmResults;
  */
 
 public class ProductDataSource {
+    private final String ID = "id";
+    private final String IS_FAVORITE = "isFavorite";
+    private final String IS_ADDED_IN_CART = "isAddedInCart";
     private Realm realm;
 
     public ProductDataSource() {
         this.realm = Realm.getDefaultInstance();
     }
 
-    public void saveFavorite(Product product) {
+    public void save(Product product) {
         realm.beginTransaction();
         realm.copyToRealmOrUpdate(product);
         realm.commitTransaction();
@@ -26,23 +29,68 @@ public class ProductDataSource {
 
     public void deleteFavorite(Product product) {
         realm.beginTransaction();
-        RealmResults<Product> results = realm.where(Product.class).equalTo("id", product.getId()).findAll();
-        results.deleteAllFromRealm();
+        if (product.isAddedInCart()) {
+            realm.copyToRealmOrUpdate(product);
+        } else {
+            RealmResults<Product> results = realm.where(Product.class).equalTo(ID, product.getId()).findAll();
+            results.deleteAllFromRealm();
+        }
+        realm.commitTransaction();
+    }
+
+    public void deleteFromCart(Product product) {
+        realm.beginTransaction();
+        if (product.isFavorite()) {
+            realm.copyToRealmOrUpdate(product);
+        } else {
+            RealmResults<Product> results = realm.where(Product.class).equalTo(ID, product.getId()).findAll();
+            results.deleteAllFromRealm();
+        }
         realm.commitTransaction();
     }
 
     public List<Product> getFavorites() {
-        RealmResults<Product> realmResults = realm.where(Product.class).findAll();
+        RealmResults<Product> realmResults = realm.where(Product.class).equalTo(IS_FAVORITE, true).findAll();
         return realm.copyFromRealm(realmResults);
     }
 
+    public List<Product> getCart() {
+        RealmResults<Product> realmResults = realm.where(Product.class).equalTo(IS_ADDED_IN_CART, true).findAll();
+        return realm.copyFromRealm(realmResults);
+    }
+
+    public int getCartSize() {
+        RealmResults<Product> realmResults = realm.where(Product.class).equalTo(IS_ADDED_IN_CART, true).findAll();
+        return realmResults.size();
+    }
+
     public boolean isExistFavorites() {
-        RealmResults<Product> realmResults = realm.where(Product.class).findAll();
+        RealmResults<Product> realmResults = realm.where(Product.class)
+                .equalTo(IS_FAVORITE, true)
+                .findAll();
+        return !realmResults.isEmpty();
+    }
+
+    public boolean isExistProductInCart() {
+        RealmResults<Product> realmResults = realm.where(Product.class)
+                .equalTo(IS_ADDED_IN_CART, true)
+                .findAll();
         return !realmResults.isEmpty();
     }
 
     public boolean isFavorite(Product product) {
-        RealmResults<Product> realmResults = realm.where(Product.class).equalTo("id", product.getId()).findAll();
+        RealmResults<Product> realmResults = realm.where(Product.class)
+                .equalTo(ID, product.getId())
+                .equalTo(IS_FAVORITE, true)
+                .findAll();
+        return !realmResults.isEmpty();
+    }
+
+    public boolean isAdded2Cart(Product product) {
+        RealmResults<Product> realmResults = realm.where(Product.class)
+                .equalTo(ID, product.getId())
+                .equalTo(IS_ADDED_IN_CART, true)
+                .findAll();
         return !realmResults.isEmpty();
     }
 

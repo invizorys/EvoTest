@@ -12,4 +12,5 @@ public interface CatalogView extends BaseView {
     void addCatalogItems(List<Product> catalogItems);
     void setFailureCatalogUpdate(int code);
     void setFailureCatalogUpdate(String message);
+    void setCartBadge(int count);
 }

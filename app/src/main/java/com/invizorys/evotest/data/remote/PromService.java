@@ -15,8 +15,8 @@ import retrofit2.http.Query;
 
 public interface PromService {
 
-    String catalogBody = "[{:catalog [:possible_sorts {:results [:id " +
-            ":name :price_currency :discounted_price :price :url_main_image_200x200 ]}]}]";
+    String catalogBody = "[{:catalog [{:results [:id :name :price_currency :discounted_price " +
+            ":price :url_main_image_200x200 ]}]}]";
 
     @Headers("Content-Type: application/json")
     @POST("request")

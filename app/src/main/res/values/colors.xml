@@ -2,6 +2,7 @@
 <resources>
     <color name="colorPrimary">@color/main_blue</color>
     <color name="colorPrimaryDark">#FF03A2CF</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#FF0081A5</color>
     <color name="main_blue">#02baee</color>
+    <color name="lime_500">#CDDC39</color>
 </resources>

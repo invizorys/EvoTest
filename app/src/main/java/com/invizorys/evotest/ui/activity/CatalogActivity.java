@@ -1,5 +1,6 @@
 package com.invizorys.evotest.ui.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -7,6 +8,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -24,6 +26,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import berlin.volders.badger.BadgeShape;
+import berlin.volders.badger.Badger;
+import berlin.volders.badger.CountBadge;
+
 public class CatalogActivity extends AppCompatActivity implements CatalogView, ProductAdapter.ProductListener {
     private RecyclerView rvProducts;
     private SwipeRefreshLayout swipeContainer;
@@ -32,11 +38,17 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView, P
     private MaterialSearchView searchView;
     private CatalogPresenter presenter = new CatalogPresenter();
     private String[] productNamesArr;
+    private EndlessRecyclerOnScrollListener rwScrollListener;
+    private CountBadge.Factory circleFactory;
+    private CountBadge cartBadge;
+    private int productCartCounter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        circleFactory = new CountBadge.Factory(this, BadgeShape.circle(.5f, Gravity.END | Gravity.TOP));
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -81,7 +93,18 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView, P
         MenuItem item = menu.findItem(R.id.action_search);
         searchView.setMenuItem(item);
 
+        cartBadge = Badger.sett(menu.findItem(R.id.action_add_2_cart), circleFactory);
+        cartBadge.setCount(productCartCounter);
+
         return true;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        presenter.attachView(this);
+        swipeContainer.setRefreshing(true);
+        presenter.getCatalog(0);
     }
 
     @Override
@@ -98,17 +121,12 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView, P
                 }
                 SharedPrefHelper.saveGridOn(this, !isGridOn);
                 return true;
+            case R.id.action_add_2_cart:
+                startActivity(new Intent(this, CartActivity.class));
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        presenter.attachView(this);
-        swipeContainer.setRefreshing(true);
-        presenter.getCatalog(0);
     }
 
     @Override
@@ -130,21 +148,21 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView, P
     @Override
     public void setCatalogItems(List<Product> catalogItems) {
         swipeContainer.setRefreshing(false);
-        List<Product> catalogItemsWithFavorites = presenter.setFavoriteFlag(catalogItems);
-        productAdapter = new ProductAdapter(catalogItemsWithFavorites, this);
+        List<Product> catalogItemsWithFlags = presenter.setFavoriteAndCartFlags(catalogItems);
+        productAdapter = new ProductAdapter(catalogItemsWithFlags, this);
         rvProducts.setAdapter(productAdapter);
-        addProductName4LocalSearch(catalogItemsWithFavorites, true);
+        addProductsName4LocalSearch(catalogItemsWithFlags, true);
     }
 
     @Override
     public void addCatalogItems(List<Product> catalogItems) {
         swipeContainer.setRefreshing(false);
-        List<Product> catalogItemsWithFavorites = presenter.setFavoriteFlag(catalogItems);
-        productAdapter.addProducts(catalogItemsWithFavorites);
-        addProductName4LocalSearch(catalogItemsWithFavorites, false);
+        List<Product> catalogItemsWithFlags = presenter.setFavoriteAndCartFlags(catalogItems);
+        productAdapter.addProducts(catalogItemsWithFlags);
+        addProductsName4LocalSearch(catalogItemsWithFlags, false);
     }
 
-    private void addProductName4LocalSearch(List<Product> products, boolean isNewList) {
+    private void addProductsName4LocalSearch(List<Product> products, boolean isNewList) {
         if (isNewList) {
             productNamesArr = new String[products.size()];
             for (int i = 0; i < products.size(); i++) {
@@ -177,28 +195,36 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView, P
                 "\n" + message, Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public void setCartBadge(int count) {
+        productCartCounter = count;
+        if (cartBadge != null) {
+            cartBadge.setCount(count);
+        }
+    }
+
     private void initGridDisplay() {
         GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
         rvProducts.setLayoutManager(layoutManager);
-        rvProducts.addOnScrollListener(new EndlessRecyclerOnScrollListener(layoutManager) {
-            @Override
-            public void onLoadMore(int totalItemCount) {
-                swipeContainer.setRefreshing(true);
-                presenter.getCatalog(totalItemCount);
-            }
-        });
+        rvProducts.removeOnScrollListener(rwScrollListener);
+        rvProducts.addOnScrollListener(getRwScrollListener(layoutManager));
     }
 
     private void initListDisplay() {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         rvProducts.setLayoutManager(layoutManager);
-        rvProducts.addOnScrollListener(new EndlessRecyclerOnScrollListener(layoutManager) {
+        rvProducts.removeOnScrollListener(rwScrollListener);
+        rvProducts.addOnScrollListener(getRwScrollListener(layoutManager));
+    }
+
+    private EndlessRecyclerOnScrollListener getRwScrollListener(RecyclerView.LayoutManager layoutManager) {
+        return rwScrollListener = new EndlessRecyclerOnScrollListener(layoutManager) {
             @Override
             public void onLoadMore(int totalItemCount) {
                 swipeContainer.setRefreshing(true);
                 presenter.getCatalog(totalItemCount);
             }
-        });
+        };
     }
 
     @Override
@@ -208,6 +234,7 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView, P
 
     @Override
     public void onBuyClicked(Product product) {
-
+        cartBadge.setCount(product.isAddedInCart() ? ++productCartCounter : --productCartCounter);
+        presenter.save2Cart(product);
     }
 }

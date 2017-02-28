@@ -24,6 +24,7 @@ public class Product implements RealmModel {
     private double price;
 
     private boolean isFavorite;
+    private boolean isAddedInCart;
 
     public int getId() {
         return id;
@@ -55,6 +56,14 @@ public class Product implements RealmModel {
 
     public void setFavorite(boolean favorite) {
         isFavorite = favorite;
+    }
+
+    public boolean isAddedInCart() {
+        return isAddedInCart;
+    }
+
+    public void setAddedInCart(boolean addedInCart) {
+        isAddedInCart = addedInCart;
     }
 
     public String getPriceAndCurrency() {

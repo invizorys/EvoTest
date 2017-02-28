@@ -25,6 +25,8 @@ import retrofit2.Response;
 public class CatalogPresenter extends BasePresenter<CatalogView> {
     private PromService promService;
     private ProductDataSource productDS;
+    private final int limit = 60;
+    private final int categoryId = 35402;
 
     public CatalogPresenter() {
         promService = new RestClient().getPromService();
@@ -34,6 +36,7 @@ public class CatalogPresenter extends BasePresenter<CatalogView> {
     public void attachView(CatalogView view) {
         super.attachView(view);
         productDS = new ProductDataSource();
+        getView().setCartBadge(productDS.getCartSize());
     }
 
     @Override
@@ -46,7 +49,8 @@ public class CatalogPresenter extends BasePresenter<CatalogView> {
         MediaType mediaType = MediaType.parse(Constants.TEXT_PLAIN);
         RequestBody body = RequestBody.create(mediaType, PromService.catalogBody);
 
-        Call<CatalogResponse> call = promService.getCatalog(body, 60, 0, 35402, Constants.SORT_PRICE);
+        Call<CatalogResponse> call = promService.getCatalog(body, limit, offset, categoryId,
+                Constants.SORT_PRICE);
         call.enqueue(new Callback<CatalogResponse>() {
             @Override
             public void onResponse(Call<CatalogResponse> call, Response<CatalogResponse> response) {
@@ -80,24 +84,39 @@ public class CatalogPresenter extends BasePresenter<CatalogView> {
     }
 
     public void saveFavorite(Product product) {
-        ProductDataSource dataSource = new ProductDataSource();
         if (product.isFavorite()) {
-            dataSource.saveFavorite(product);
+            productDS.save(product);
         } else {
-            dataSource.deleteFavorite(product);
+            productDS.deleteFavorite(product);
         }
     }
 
-    public List<Product> setFavoriteFlag(List<Product> catalogItems) {
+    public void save2Cart(Product product) {
+        if (product.isAddedInCart()) {
+            productDS.save(product);
+        } else {
+            productDS.deleteFromCart(product);
+        }
+    }
+
+    public List<Product> setFavoriteAndCartFlags(List<Product> catalogItems) {
         ProductDataSource productDS = new ProductDataSource();
-        if (productDS.isExistFavorites()) {
+
+        boolean isExistFavorites = productDS.isExistFavorites();
+        boolean isExistProductInCart = productDS.isExistProductInCart();
+
+        if (isExistFavorites || isExistProductInCart) {
             for (int i = 0; i < catalogItems.size(); i++) {
                 Product product = catalogItems.get(i);
-                if (productDS.isFavorite(product)) {
+                if (isExistFavorites && productDS.isFavorite(product)) {
                     product.setFavorite(true);
+                }
+                if (isExistProductInCart && productDS.isAdded2Cart(product)) {
+                    product.setAddedInCart(true);
                 }
             }
         }
+
         return catalogItems;
     }
 }

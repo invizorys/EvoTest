@@ -1,6 +1,7 @@
 package com.invizorys.evotest.ui.adapter;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -64,18 +65,23 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.MyViewHo
 
         Picasso.with(context).load(product.getImageUrl()).into(holder.ivThumbnail);
 
+        holder.btnBuy.setTextColor(product.isAddedInCart() ?
+                ContextCompat.getColor(context, R.color.lime_500) :
+                ContextCompat.getColor(context, R.color.colorPrimary));
         holder.btnBuy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                product.setAddedInCart(!product.isAddedInCart());
+                holder.btnBuy.setTextColor(product.isAddedInCart() ?
+                        ContextCompat.getColor(context, R.color.lime_500) :
+                        ContextCompat.getColor(context, R.color.colorPrimary));
+                listener.onBuyClicked(product);
             }
         });
 
-        if (product.isFavorite()) {
-            holder.ibtnFavorite.setImageResource(R.drawable.ic_favorite);
-        } else {
-            holder.ibtnFavorite.setImageResource(R.drawable.ic_favorite_border);
-        }
+        holder.ibtnFavorite.setImageResource(product.isFavorite() ?
+                R.drawable.ic_favorite :
+                R.drawable.ic_favorite_border);
         holder.ibtnFavorite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -99,6 +105,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.MyViewHo
 
     public interface ProductListener {
         void onFavoriteClicked(Product product);
+
         void onBuyClicked(Product product);
     }
 }

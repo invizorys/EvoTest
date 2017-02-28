@@ -27,8 +27,8 @@ import retrofit2.Response;
 public class CatalogPresenter extends BasePresenter<CatalogView> {
     private PromService promService;
     private ProductDataSource productDS;
-    private final int limit = 60;
-    private final int categoryId = 35402;
+    private static final int LIMIT = 60;
+    private static final int CATEGORY_ID = 35402;
 
     public CatalogPresenter() {
         promService = new RestClient().getPromService();
@@ -52,7 +52,7 @@ public class CatalogPresenter extends BasePresenter<CatalogView> {
         RequestBody body = RequestBody.create(mediaType, PromService.catalogBody);
 
         String sortType = SharedPrefHelper.getSortType(context);
-        Call<CatalogResponse> call = promService.getCatalog(body, limit, offset, categoryId, sortType);
+        Call<CatalogResponse> call = promService.getCatalog(body, LIMIT, offset, CATEGORY_ID, sortType);
         call.enqueue(new Callback<CatalogResponse>() {
             @Override
             public void onResponse(Call<CatalogResponse> call, Response<CatalogResponse> response) {
@@ -102,8 +102,6 @@ public class CatalogPresenter extends BasePresenter<CatalogView> {
     }
 
     public List<Product> setFavoriteAndCartFlags(List<Product> catalogItems) {
-        ProductDataSource productDS = new ProductDataSource();
-
         boolean isExistFavorites = productDS.isExistFavorites();
         boolean isExistProductInCart = productDS.isExistProductInCart();
 

@@ -112,34 +112,42 @@ public class CatalogActivity extends AppCompatActivity implements CatalogView, P
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_grid_on:
-                boolean isGridOn = SharedPrefHelper.isGridOn(this);
-                if (isGridOn) {
-                    initListDisplay();
-                    setMenuItemGrid();
-                } else {
-                    initGridDisplay();
-                    setMenuItemList();
-                }
-                SharedPrefHelper.saveGridOn(this, !isGridOn);
+                changeProductsDisplay();
                 return true;
             case R.id.action_add_2_cart:
                 startActivity(new Intent(this, CartActivity.class));
                 return true;
             case R.id.action_sort:
-                String currentSortType = SharedPrefHelper.getSortType(this);
-                if (currentSortType.equals(Constants.SORT_ASCENDING_PRICE)) {
-                    item.setIcon(R.drawable.ic_sort_ascending);
-                    item.setTitle(R.string.sort_ascending);
-                    SharedPrefHelper.saveSortType(this, Constants.SORT_DESCENDING_PRICE);
-                } else {
-                    item.setIcon(R.drawable.ic_sort_descending);
-                    item.setTitle(R.string.sort_descending);
-                    SharedPrefHelper.saveSortType(this, Constants.SORT_ASCENDING_PRICE);
-                }
+                changeSortType(item);
                 presenter.getCatalog(this, 0);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void changeProductsDisplay() {
+        boolean isGridOn = SharedPrefHelper.isGridOn(this);
+        if (isGridOn) {
+            initListDisplay();
+            setMenuItemGrid();
+        } else {
+            initGridDisplay();
+            setMenuItemList();
+        }
+        SharedPrefHelper.saveGridOn(this, !isGridOn);
+    }
+
+    private void changeSortType(MenuItem item) {
+        String currentSortType = SharedPrefHelper.getSortType(this);
+        if (currentSortType.equals(Constants.SORT_ASCENDING_PRICE)) {
+            item.setIcon(R.drawable.ic_sort_ascending);
+            item.setTitle(R.string.sort_ascending);
+            SharedPrefHelper.saveSortType(this, Constants.SORT_DESCENDING_PRICE);
+        } else {
+            item.setIcon(R.drawable.ic_sort_descending);
+            item.setTitle(R.string.sort_descending);
+            SharedPrefHelper.saveSortType(this, Constants.SORT_ASCENDING_PRICE);
         }
     }
 

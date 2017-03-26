@@ -11,6 +11,8 @@ public class CartPresenter extends BasePresenter<CartView> {
 
     public void getCart() {
         ProductDataSource productDS = new ProductDataSource();
-        getView().setCart(productDS.getCart());
+        if (isViewAttached()) {
+            getView().setCart(productDS.getCart());
+        }
     }
 }
